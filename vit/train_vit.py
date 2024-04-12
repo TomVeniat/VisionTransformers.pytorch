@@ -5,7 +5,7 @@ from torchvision import datasets
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 
-from tqdm import tqdm
+from tqdm import tqdm, trange
 from vit import VisionTransformer
 
 
@@ -57,12 +57,13 @@ def train(config):
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
     writer = SummaryWriter()
 
-    for epoch in range(config['epochs']):
+    for epoch in trange(config['epochs'], desc="Training progress"):
         model.train()
         total = 0
         correct = 0
         total_loss = 0
-        for i, (x, y) in enumerate(tqdm(train_loader, desc=f"Epoch {epoch}")):
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch}", leave=False)
+        for i, (x, y) in enumerate(pbar):
             x, y = x.to(config['device']), y.to(config['device'])
 
             optimizer.zero_grad()
@@ -94,7 +95,8 @@ def train(config):
 
             test_acc = correct / total
             test_loss = total_loss / len(test_loader)
-            print(f"Epoch {epoch}: Accuracy: {test_acc}")
+            tqdm.write(f"Epoch {epoch}: Accuracy: {test_acc}")
+            # print(f"Epoch {epoch}: Accuracy: {test_acc}")
         writer.add_scalars('Accuracy', {'Train': train_acc, 'Test': test_acc}, epoch)
         writer.add_scalars('Loss', {'Train': train_loss, 'Test': test_loss}, epoch)
 
