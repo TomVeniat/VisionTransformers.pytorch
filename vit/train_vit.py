@@ -22,6 +22,7 @@ def get_args():
     parser.add_argument('--embed_dim', type=int, default=128)
     parser.add_argument('--patch_size', type=int, default=4)
     parser.add_argument('--dropout', type=float, default=0.1)
+    parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
 
     return vars(parser.parse_args())
@@ -54,7 +55,7 @@ def train(config):
     model = VisionTransformer(config['img_size'], config['patch_size'], config['embed_dim'], config['n_layers'], config['n_heads'], n_classes=config['n_classes'])
     model.to(config['device'])
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'])
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
     writer = SummaryWriter()
 
     for epoch in trange(config['epochs'], desc="Training progress"):
