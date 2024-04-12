@@ -105,10 +105,14 @@ class TransformerBlock(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    def __init__(self, patch_size=16, embed_dim=512, n_layers=4, n_heads=8, n_classes=None):
+    def __init__(self, img_size=(32,32), patch_size=16, embed_dim=512, n_layers=4, n_heads=8, n_classes=None):
         super().__init__()
 
         self.patch_embed = PatchEmbedding(patch_size, embed_dim)
+        n_patches = (img_size[0]//patch_size) * (img_size[1]//patch_size)
+        self.pos_embed = nn.Parameter(torch.randn(1, n_patches+1, embed_dim))
+
+
         self.class_token = nn.Parameter(torch.randn(1, 1, embed_dim))
         
         self.layers = nn.ModuleList(
@@ -129,6 +133,8 @@ class VisionTransformer(nn.Module):
     def forward(self, x):
         embed = self.patch_embed(x)
         embed = torch.cat([self.class_token.repeat(x.shape[0], 1, 1), embed], dim=1)
+
+        embed += self.pos_embed
 
 
         for l in self.layers:
