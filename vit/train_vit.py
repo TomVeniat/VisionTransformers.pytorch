@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import torch
 import torchvision
@@ -65,7 +66,20 @@ def train(config):
     model.to(config['device'])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
+    
+    # last_commit_msg = os.popen('git log -1 --pretty=%B').read().strip()
+    # writer = SummaryWriter(comment=f"_{last_commit_msg}")
+    layout = {
+        "metrics": {
+            "loss": ["Multilinfe", ["loss/train", "loss/test"]],
+            "accuracy": ["Multiline", ["accuracy/train", "accuracy/test"]],
+        },
+    }
+
     writer = SummaryWriter()
+    writer.add_custom_scalars(layout)
+
+
 
     for epoch in trange(config['epochs'], desc="Training progress"):
         model.train()
@@ -107,8 +121,12 @@ def train(config):
             test_loss = total_loss / len(test_loader)
             tqdm.write(f"Epoch {epoch}: Accuracy: {test_acc}")
             # print(f"Epoch {epoch}: Accuracy: {test_acc}")
-        writer.add_scalars('Accuracy', {'Train': train_acc, 'Test': test_acc}, epoch)
-        writer.add_scalars('Loss', {'Train': train_loss, 'Test': test_loss}, epoch)
+        # writer.add_scalars('accuracy', {'train': train_acc, 'test': test_acc}, epoch)
+        writer.add_scalar('accuracy/train', train_acc, epoch)
+        writer.add_scalar('accuracy/test', test_acc, epoch)
+        writer.add_scalar('loss/train', train_loss, epoch)
+        writer.add_scalar('loss/test', test_loss, epoch)
+        # writer.add_scalars('loss', {'train': train_loss, 'test': test_loss}, epoch)
 
 if __name__ == '__main__':
     config = get_args()

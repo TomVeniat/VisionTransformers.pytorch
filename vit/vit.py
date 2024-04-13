@@ -36,9 +36,8 @@ class MlpBlock(nn.Module):
             case 'gelu':
                 self.activation = nn.GELU
 
-        self.layers = [       ]
+        self.layers = []
         for _ in range(n_layers-1):
-            self.layers.append(nn.LayerNorm(in_dim))
             self.layers.append(nn.Linear(in_dim, in_dim))
             self.layers.append(self.activation())
             self.layers.append(nn.Dropout(dropout))
