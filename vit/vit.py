@@ -24,39 +24,45 @@ class PatchEmbedding(nn.Module):
     
 
 class MlpBlock(nn.Module):
-    def __init__(self, in_dim, out_dim=None, n_layers=2, activation='gelu') -> None:
+    def __init__(self, in_dim, out_dim=None, n_layers=2, activation='gelu', dropout=0.1) -> None:
         super().__init__()
         out_dim = out_dim or in_dim
 
-        self.layers = [
-            nn.Linear(in_dim, in_dim) for _ in range(n_layers-1)
-        ]
-        self.layers.append(nn.Linear(in_dim, out_dim))
-        self.layers = nn.ModuleList(self.layers)
-
         match activation:
             case 'relu':
-                self.activation = F.relu
+                self.activation = nn.ReLU
             case 'sigmoid':
-                self.activation = F.sigmoid
+                self.activation = nn.Sigmoid
             case 'gelu':
-                self.activation = F.gelu
+                self.activation = nn.GELU
+
+        self.layers = [       ]
+        for _ in range(n_layers-1):
+            self.layers.append(nn.LayerNorm(in_dim))
+            self.layers.append(nn.Linear(in_dim, in_dim))
+            self.layers.append(self.activation())
+            self.layers.append(nn.Dropout(dropout))
+        self.layers.append(nn.Linear(in_dim, out_dim))
+        self.layers.append(nn.Dropout(dropout))
+        self.layers = nn.Sequential(*self.layers)
+        
 
 
     def forward(self, x):
-        for l in self.layers:
-            x = self.activation(l(x))
+        x = self.layers(x)
         return x
 
 
 class AttentionBlock(nn.Module):
-    def __init__(self, embed_dim, n_heads):
+    def __init__(self, embed_dim, n_heads, dropout):
         super().__init__()
         self.n_heads = n_heads
         assert embed_dim % n_heads == 0
         # self.head_dim = embed_dim // n_heads
         self.head_dim = embed_dim
         
+        self.dropout = nn.Dropout(dropout)
+
         self.wq = nn.Linear(embed_dim, embed_dim* n_heads)
         self.wk = nn.Linear(embed_dim, embed_dim* n_heads)
         self.wv = nn.Linear(embed_dim, embed_dim* n_heads)
@@ -75,7 +81,7 @@ class AttentionBlock(nn.Module):
         norm_fact = math.sqrt(self.head_dim)
         contexts = [q@k.transpose(-1, -2) / norm_fact for q, k in zip(q_projs, k_projs)]
 
-        contexts = [F.softmax(c, dim=1) for c in contexts]
+        contexts = [self.dropout(F.softmax(c, dim=1)) for c in contexts]
 
         atts = [c@v for c,v in zip(contexts, v_projs)]
 
@@ -85,13 +91,13 @@ class AttentionBlock(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, embed_dim, n_heads) -> None:
+    def __init__(self, embed_dim, n_heads, dropout) -> None:
         super().__init__()
         self.embed_dim = embed_dim
         self.n_heads = n_heads
 
-        self.self_attention = AttentionBlock(embed_dim, n_heads)
-        self.mlp = MlpBlock(embed_dim)
+        self.self_attention = AttentionBlock(embed_dim, n_heads, dropout)
+        self.mlp = MlpBlock(embed_dim,dropout=dropout)
         self.norm1 = nn.LayerNorm(embed_dim)
         self.norm2 = nn.LayerNorm(embed_dim)
 
@@ -106,7 +112,7 @@ class TransformerBlock(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    def __init__(self, img_size=(32,32), patch_size=16, embed_dim=512, n_layers=4, n_heads=8, n_classes=None):
+    def __init__(self, img_size=(32,32), patch_size=16, embed_dim=512, n_layers=4, n_heads=8, dropout=0.1, n_classes=None):
         super().__init__()
 
         self.patch_embed = PatchEmbedding(patch_size, embed_dim)
@@ -120,7 +126,8 @@ class VisionTransformer(nn.Module):
             [
                 TransformerBlock(
                     embed_dim=embed_dim,
-                    n_heads=n_heads
+                    n_heads=n_heads, 
+                    dropout=dropout
                 ) for _ in range(n_layers)]
         )
 

@@ -52,7 +52,7 @@ def train(config):
 
     train_loader, test_loader = load_dataset(config)
 
-    model = VisionTransformer(config['img_size'], config['patch_size'], config['embed_dim'], config['n_layers'], config['n_heads'], n_classes=config['n_classes'])
+    model = VisionTransformer(config['img_size'], config['patch_size'], config['embed_dim'], config['n_layers'], config['n_heads'], n_classes=config['n_classes'], dropout=config['dropout'])
     model.to(config['device'])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
