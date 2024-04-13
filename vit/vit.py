@@ -54,13 +54,14 @@ class AttentionBlock(nn.Module):
         super().__init__()
         self.n_heads = n_heads
         assert embed_dim % n_heads == 0
-        self.head_dim = embed_dim // n_heads
+        # self.head_dim = embed_dim // n_heads
+        self.head_dim = embed_dim
         
-        self.wq = nn.Linear(embed_dim, embed_dim)
-        self.wk = nn.Linear(embed_dim, embed_dim)
-        self.wv = nn.Linear(embed_dim, embed_dim)
+        self.wq = nn.Linear(embed_dim, embed_dim* n_heads)
+        self.wk = nn.Linear(embed_dim, embed_dim* n_heads)
+        self.wv = nn.Linear(embed_dim, embed_dim* n_heads)
         
-        self.out_proj = nn.Linear(embed_dim, embed_dim)
+        self.out_proj = nn.Linear(embed_dim * n_heads, embed_dim)
 
     def forward(self, q, k=None, v=None):
         k = k if k is not None else q
@@ -152,6 +153,6 @@ if __name__ == "__main__":
     res = embed_layer(fake_img)
     print(res.shape)
 
-    vit = VisionTransformer(n_classes=10)
+    vit = VisionTransformer(n_classes=10, img_size=(224,224))
     res = vit(fake_img)
     print(res.shape)
