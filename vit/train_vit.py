@@ -1,7 +1,7 @@
 from pathlib import Path
 import torch
 import torchvision
-from torchvision import datasets
+from torchvision import datasets, transforms
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 
@@ -30,13 +30,22 @@ def get_args():
 def load_dataset(config):
 
     
-    transform = torchvision.transforms.Compose([
-        torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) 
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        # transforms.Resize(size),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     ])
+    transform_test = transforms.Compose([
+        # transforms.Resize(size),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
     if config['dataset'] == 'cifar10':
-        ds_train = datasets.CIFAR10(train=True, root=Path.home()/'data'/'pytorch', download=True, transform=transform)
-        ds_test = datasets.CIFAR10(train=False, root=Path.home()/'data'/'pytorch', transform=transform)
+        ds_train = datasets.CIFAR10(train=True, root=Path.home()/'data'/'pytorch', download=True, transform=transform_train)
+        ds_test = datasets.CIFAR10(train=False, root=Path.home()/'data'/'pytorch', transform=transform_test)
         config['n_classes'] = 10
         config['img_size'] = (32, 32)
     else: 
