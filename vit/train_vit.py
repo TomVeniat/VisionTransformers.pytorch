@@ -26,6 +26,8 @@ def get_args():
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
 
+    parser.add_argument('--exp-name', type=str, default=None)
+
     return vars(parser.parse_args())
 
 def load_dataset(config):
@@ -76,7 +78,7 @@ def train(config):
         },
     }
 
-    writer = SummaryWriter()
+    writer = SummaryWriter(comment=f"_{config['exp_name']}" if config['exp_name'] is not None else "")
     writer.add_custom_scalars(layout)
 
 
