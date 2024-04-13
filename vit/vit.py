@@ -56,7 +56,7 @@ class AttentionBlock(nn.Module):
     def __init__(self, embed_dim, n_heads, dropout):
         super().__init__()
         self.n_heads = n_heads
-        assert embed_dim % n_heads == 0
+        # assert embed_dim % n_heads == 0
         # self.head_dim = embed_dim // n_heads
         self.head_dim = embed_dim
         

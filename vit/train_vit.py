@@ -14,43 +14,51 @@ def get_args():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dataset', type=str, default='cifar10')
-    parser.add_argument('--batch_size', type=int, default=512)
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--dataset', type=str, default='monkeys')
+    parser.add_argument('--batch-size', type=int, default=512)
+    parser.add_argument('--epochs', type=int, default=200)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--n_layers', type=int, default=4)
-    parser.add_argument('--n_heads', type=int, default=8)
-    parser.add_argument('--embed_dim', type=int, default=128)
-    parser.add_argument('--patch_size', type=int, default=4)
+    parser.add_argument('--n-layers', type=int, default=4)
+    parser.add_argument('--n-heads', type=int, default=8)
+    parser.add_argument('--embed-dim', type=int, default=512)
+    parser.add_argument('--patch-size', type=int, default=16)
     parser.add_argument('--dropout', type=float, default=0.1)
-    parser.add_argument('--weight_decay', type=float, default=0.0001)
+    parser.add_argument('--weight-decay', type=float, default=0)
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
 
     parser.add_argument('--exp-name', type=str, default=None)
 
     return vars(parser.parse_args())
 
-def load_dataset(config):
-
-    
+def get_transforms(config, norm_mean, norm_std):
     transform_train = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        # transforms.Resize(size),
+        # transforms.RandomCrop(config['img_size'], padding=4),
+        transforms.Resize(config['img_size']),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        transforms.Normalize(norm_mean, norm_std)
     ])
     transform_test = transforms.Compose([
-        # transforms.Resize(size),
+        transforms.Resize(config['img_size']),
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        transforms.Normalize(norm_mean, norm_std)
     ])
+    return transform_train, transform_test
+
+def load_dataset(config):
 
     if config['dataset'] == 'cifar10':
-        ds_train = datasets.CIFAR10(train=True, root=Path.home()/'data'/'pytorch', download=True, transform=transform_train)
-        ds_test = datasets.CIFAR10(train=False, root=Path.home()/'data'/'pytorch', transform=transform_test)
         config['n_classes'] = 10
         config['img_size'] = (32, 32)
+        trans_train, trans_test = get_transforms(config, (0.4914, 0.4822, 0.4465), (0.24703223, 0.24348513, 0.26158784))
+        ds_train = datasets.CIFAR10(train=True, root=Path.home()/'data'/'pytorch', download=True, transform=trans_train)
+        ds_test = datasets.CIFAR10(train=False, root=Path.home()/'data'/'pytorch', transform=trans_test)
+    elif config['dataset'] == 'monkeys':
+        config['n_classes'] = 10
+        config['img_size'] = (224, 224)
+        trans_train, trans_test = get_transforms(config, (0.4914, 0.4822, 0.4465), (0.24703223, 0.24348513, 0.26158784))
+        ds_train = datasets.ImageFolder(root=Path.home()/'data'/'monkeys'/'training', transform=trans_train)
+        ds_test = datasets.ImageFolder(root=Path.home()/'data'/'monkeys'/'validation', transform=trans_test)
     else: 
         raise ValueError(f"Unknown dataset: {config['dataset']}")
 
