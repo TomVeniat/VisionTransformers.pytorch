@@ -50,13 +50,13 @@ def load_dataset(config):
     if config['dataset'] == 'cifar10':
         config['n_classes'] = 10
         config['img_size'] = (32, 32)
-        trans_train, trans_test = get_transforms(config, (0.4914, 0.4822, 0.4465), (0.24703223, 0.24348513, 0.26158784))
+        trans_train, trans_test = get_transforms(config, (0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
         ds_train = datasets.CIFAR10(train=True, root=Path.home()/'data'/'pytorch', download=True, transform=trans_train)
         ds_test = datasets.CIFAR10(train=False, root=Path.home()/'data'/'pytorch', transform=trans_test)
     elif config['dataset'] == 'monkeys':
         config['n_classes'] = 10
         config['img_size'] = (224, 224)
-        trans_train, trans_test = get_transforms(config, (0.4914, 0.4822, 0.4465), (0.24703223, 0.24348513, 0.26158784))
+        trans_train, trans_test = get_transforms(config, (0.4363, 0.4328 , 0.3291), (0.2464, 0.2419, 0.2454))
         ds_train = datasets.ImageFolder(root=Path.home()/'data'/'monkeys'/'training', transform=trans_train)
         ds_test = datasets.ImageFolder(root=Path.home()/'data'/'monkeys'/'validation', transform=trans_test)
     else: 
