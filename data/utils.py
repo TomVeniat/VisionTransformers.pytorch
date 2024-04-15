@@ -16,16 +16,27 @@ def get_transforms(config, norm_mean, norm_std):
         [
             # transforms.Resize(config["img_size"]),
             # transforms.RandomCrop(config["img_size"], padding=4),
-            transforms.RandomResizedCrop(config["img_size"]),
+            # transforms.RandomResizedCrop(config["img_size"]),
+            # transforms.RandomHorizontalFlip(),
+            # transforms.ToTensor(),
+            # transforms.Normalize(norm_mean, norm_std),
+
+            transforms.Resize(256),
             transforms.RandomHorizontalFlip(),
+            transforms.RandomVerticalFlip(),
+            transforms.RandomRotation(degrees=45),
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
+            transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
-            transforms.Normalize(norm_mean, norm_std),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+
         ]
     )
     transform_test = transforms.Compose(
         [
 
-            transforms.Resize(config["img_size"]+32),
+            transforms.Resize(256),
             transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
             transforms.Normalize(norm_mean, norm_std),
