@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from datasets import load_dataset
 from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
 
 _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD = [0.229, 0.224, 0.225]
@@ -120,11 +121,16 @@ def get_dataset(config):
     else:
         raise ValueError(f"Unknown dataset: {config['dataset']}")
 
-    train_loader = torch.utils.data.DataLoader(
-        ds_train, collate_fn=hf_collate_fn, batch_size=config["batch_size"]
+    train_loader = DataLoader(
+        ds_train,
+        collate_fn=hf_collate_fn,
+        batch_size=config["batch_size"],
+        shuffle=True,
     )
-    test_loader = torch.utils.data.DataLoader(
-        ds_test, collate_fn=hf_collate_fn, batch_size=config["batch_size"]
+    test_loader = DataLoader(
+        ds_test, 
+        collate_fn=hf_collate_fn,
+          batch_size=config["batch_size"]
     )
 
     return train_loader, test_loader

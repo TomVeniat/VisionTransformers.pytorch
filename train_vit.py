@@ -1,3 +1,4 @@
+from collections import defaultdict
 import torch
 import argparse
 from torch.utils.tensorboard import SummaryWriter
@@ -100,8 +101,7 @@ def train(config):
             total = 0
             correct = 0
             total_loss = 0
-
-            for x, y in test_loader:
+            for batch in test_loader:
                 x, y = (
                     batch["pixel_values"].to(config["device"]),
                     batch["labels"].to(config["device"]),
@@ -112,7 +112,6 @@ def train(config):
                 total += y.size(0)
                 correct += (predicted == y).sum().item()
                 total_loss += torch.nn.functional.cross_entropy(y_hat, y).item()
-
             test_acc = correct / total
             test_loss = total_loss / len(test_loader)
             tqdm.write(f"Epoch {epoch}: Accuracy: {test_acc}")
