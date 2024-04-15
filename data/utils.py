@@ -14,8 +14,9 @@ _IMAGENET_STD = [0.229, 0.224, 0.225]
 def get_transforms(config, norm_mean, norm_std):
     transform_train = transforms.Compose(
         [
-            transforms.Resize(config["img_size"]),
-            transforms.RandomCrop(config["img_size"], padding=4),
+            # transforms.Resize(config["img_size"]),
+            # transforms.RandomCrop(config["img_size"], padding=4),
+            transforms.RandomResizedCrop(config["img_size"]),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(norm_mean, norm_std),
@@ -23,7 +24,9 @@ def get_transforms(config, norm_mean, norm_std):
     )
     transform_test = transforms.Compose(
         [
-            transforms.Resize(config["img_size"]),
+
+            transforms.Resize(config["img_size"]+32),
+            transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
             transforms.Normalize(norm_mean, norm_std),
         ]
