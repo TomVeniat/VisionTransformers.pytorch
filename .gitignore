@@ -1,6 +1,8 @@
 # IDE
 .idea
+.vscode
 
-tokenizer_*.json
 weights
 runs
+
+__pycache__/
