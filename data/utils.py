@@ -25,7 +25,7 @@ def get_transforms(config, norm_mean, norm_std):
     transform_test = transforms.Compose(
         [
 
-            transforms.Resize(config["img_size"]+32),
+            transforms.Resize(256),
             transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
             transforms.Normalize(norm_mean, norm_std),
