@@ -43,7 +43,7 @@ def hf_collate_fn(examples):
 
     for example in examples:
         images.append(example["pixel_values"])
-        labels.append(example["labels"])
+        labels.append(example["label" if "label" in example else "labels"])
 
     pixel_values = torch.stack(images)
     labels = torch.tensor(labels)
