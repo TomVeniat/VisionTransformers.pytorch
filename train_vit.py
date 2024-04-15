@@ -18,8 +18,8 @@ torch.Tensor.__repr__ = custom_repr
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--dataset", type=str, default="beans")
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--dataset", type=str, default="tiny-imagenet")
+    parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--n-layers", type=int, default=8)

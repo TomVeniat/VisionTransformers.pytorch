@@ -84,7 +84,7 @@ def get_dataset(config):
     elif config["dataset"] == "tiny-imagenet":
         config["n_classes"] = 200
         config["img_size"] = (64, 64)
-        config["patch_size"] = 16
+        config["patch_size"] = 8
         trans_train, trans_test = get_transforms(config, _IMAGENET_MEAN, _IMAGENET_STD)
         trans_train = partial(torch_to_hf_transforms, trans=trans_train)
         trans_test = partial(torch_to_hf_transforms, trans=trans_test)
