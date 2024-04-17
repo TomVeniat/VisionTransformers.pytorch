@@ -20,22 +20,20 @@ def get_transforms(config, norm_mean, norm_std):
             # transforms.RandomHorizontalFlip(),
             # transforms.ToTensor(),
             # transforms.Normalize(norm_mean, norm_std),
-
             transforms.Resize(256),
             transforms.RandomHorizontalFlip(),
             transforms.RandomVerticalFlip(),
             transforms.RandomRotation(degrees=45),
-            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
+            transforms.ColorJitter(
+                brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5
+            ),
             transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-
-
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ]
     )
     transform_test = transforms.Compose(
         [
-
             transforms.Resize(256),
             transforms.CenterCrop(config["img_size"]),
             transforms.ToTensor(),
@@ -140,11 +138,14 @@ def get_dataset(config):
         collate_fn=hf_collate_fn,
         batch_size=config["batch_size"],
         shuffle=True,
+        num_workers=config["num_workers"],
     )
     test_loader = DataLoader(
-        ds_test, 
+        ds_test,
         collate_fn=hf_collate_fn,
-          batch_size=config["batch_size"]
+        batch_size=config["batch_size"],
+        shuffle=False,
+        num_workers=config["num_workers"],
     )
 
     return train_loader, test_loader

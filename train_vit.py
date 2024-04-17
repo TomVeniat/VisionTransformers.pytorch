@@ -32,7 +32,7 @@ def get_args():
     parser.add_argument(
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
     )
-
+    parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--exp-name", type=str, default=None)
 
     return vars(parser.parse_args())
