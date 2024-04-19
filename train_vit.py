@@ -1,11 +1,13 @@
 from collections import defaultdict
 import torch
 import argparse
+import utils
 from torch.utils.tensorboard import SummaryWriter
 
 from tqdm import tqdm, trange
 from data.utils import get_dataset
 from model.vit import VisionTransformer
+from torchvision import models
 
 
 def custom_repr(self):
@@ -33,31 +35,12 @@ def get_args():
         "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
     )
     parser.add_argument("--num-workers", type=int, default=4)
-    parser.add_argument("--exp-name", type=str, default=None)
+    parser.add_argument("--exp-name", type=str, default="")
 
     return vars(parser.parse_args())
 
 
 def train(config):
-    train_loader, test_loader = get_dataset(config)
-
-    model = VisionTransformer(
-        config["img_size"],
-        config["patch_size"],
-        config["embed_dim"],
-        config["n_layers"],
-        config["n_heads"],
-        n_classes=config["n_classes"],
-        dropout=config["dropout"],
-    )
-    model.to(config["device"])
-
-    optimizer = torch.optim.Adam(
-        model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"]
-    )
-
-    # last_commit_msg = os.popen('git log -1 --pretty=%B').read().strip()
-    # writer = SummaryWriter(comment=f"_{last_commit_msg}")
     layout = {
         "metrics": {
             "loss": ["Multiline", ["loss/train", "loss/test"]],
@@ -66,9 +49,44 @@ def train(config):
     }
 
     writer = SummaryWriter(
-        comment=f"_{config['exp_name']}" if config["exp_name"] is not None else ""
+        comment=f"_{config['exp_name']}" if config["exp_name"] else ""
     )
+    hp = config.copy()
+    # writer.add_hparams(config, {"hparam/accuracy": 0.0, "hparam/loss": 0.0}, run_name='a')
     writer.add_custom_scalars(layout)
+
+    train_loader, test_loader = get_dataset(config)
+
+    # model = VisionTransformer(
+    #     config["img_size"],
+    #     config["patch_size"],
+    #     config["embed_dim"],
+    #     config["n_layers"],
+    #     config["n_heads"],
+    #     n_classes=config["n_classes"],
+    #     dropout=config["dropout"],
+    # )
+
+    model = models.VisionTransformer(
+        image_size=config["img_size"][0],
+        num_classes=config["n_classes"],
+        patch_size=config["patch_size"],
+        hidden_dim=config["embed_dim"],
+        num_heads=config["n_heads"],
+        num_layers=config["n_layers"],
+        mlp_dim=config["embed_dim"],
+        dropout=config["dropout"],
+    )
+    model.to(config["device"])
+
+    hp["n_params"] = utils.count_parameters(model)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"]
+    )
+
+    # last_commit_msg = os.popen('git log -1 --pretty=%B').read().strip()
+    # writer = SummaryWriter(comment=f"_{last_commit_msg}")
 
     for epoch in trange(config["epochs"], desc="Training progress"):
         model.train()
@@ -84,7 +102,8 @@ def train(config):
             # x, y = x.to(config['device']), y.to(config['device'])
 
             optimizer.zero_grad()
-            y_hat = model(x)[:, 0, :]
+            y_hat = model(x)
+            # y_hat = y_hat[:, 0, :]
             loss = torch.nn.functional.cross_entropy(y_hat, y)
             loss.backward()
             optimizer.step()
@@ -122,6 +141,9 @@ def train(config):
         writer.add_scalar("loss/train", train_loss, epoch)
         writer.add_scalar("loss/test", test_loss, epoch)
         # writer.add_scalars('loss', {'train': train_loss, 'test': test_loss}, epoch)
+        writer.add_hparams(
+            hp, {"hparam/accuracy": test_acc, "hparam/loss": test_loss}, run_name="main"
+        )
 
 
 if __name__ == "__main__":

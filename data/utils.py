@@ -98,6 +98,7 @@ def get_dataset(config):
         config["n_classes"] = 200
         config["img_size"] = (64, 64)
         config["patch_size"] = 8
+        # Input seq will be of shape (B, 65, D) 
         trans_train, trans_test = get_transforms(config, _IMAGENET_MEAN, _IMAGENET_STD)
         trans_train = partial(torch_to_hf_transforms, trans=trans_train)
         trans_test = partial(torch_to_hf_transforms, trans=trans_test)
@@ -157,3 +158,4 @@ def get_ds_stats(ds):
     # return: mean, std
     x = np.stack([np.asarray(ds[i][0]) for i in range(len(ds))])
     return x.mean(axis=(0, 2, 3)), x.std(axis=(0, 2, 3))
+
