@@ -126,7 +126,8 @@ def train(config):
                     batch["labels"].to(config["device"]),
                 )
                 # x, y = x.to(config['device']), y.to(config['device'])
-                y_hat = model(x)[:, 0, :]
+                y_hat = model(x)
+                # y_hat = y_hat[:, 0, :]
                 _, predicted = torch.max(y_hat, 1)
                 total += y.size(0)
                 correct += (predicted == y).sum().item()
