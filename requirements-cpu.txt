@@ -1,0 +1,5 @@
+torch 
+torchvision 
+datasets==2.15.0
+tensorboard
+tqdm
